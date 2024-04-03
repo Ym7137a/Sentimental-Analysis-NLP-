@@ -1,0 +1,365 @@
+---
+title: "Sentiment Analysis using Twitter Data - georgefloyd"
+author: "Yashvi Malviya"
+pages:
+  extra: yes
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    code_download: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+packages <- c("readxl","tidytext","plyr","dplyr","tidyr","ggplot2","scales",
+              "purrr","textdata","wordcloud","reshape2","stringr","igraph",
+              "ggraph","widyr","grid","arules","tm","topicmodels")
+for(i in packages){
+  if(!require(i,character.only = T, quietly = T)){
+    install.packages(i)
+  }
+  library(i, character.only = T, quietly = T)
+}
+
+rm(list=ls())
+
+set.seed(2020)
+```
+
+
+# Loading Data 
+
+```{r}
+
+library(readr)
+
+tweets1 <- read.csv("week2.csv", header = TRUE)
+tweets2 <- read.csv("week3.csv", header = TRUE)
+tweets3 <- read.csv("week5.csv", header = TRUE)
+tweets4 <- read.csv("week6.csv", header = TRUE)
+tweets5 <- read.csv("week11.csv", header = TRUE)
+tweets6 <- read.csv("week12.csv", header = TRUE)
+
+```
+
+# Data Wrangling
+## Data Clean Using Customized Functions
+
+```{r}
+
+dfList<-list(tweets1,tweets2,tweets3,tweets4,tweets5,tweets6)
+result_list <- lapply(dfList, function(x) {
+  cat("Original column names:\n")
+  print(colnames(x))
+  english_tweets <- subset(x, x$`19: Language` == "English")
+  
+  cat("\nColumn names after subset:\n")
+  print(colnames(english_tweets))
+  if (nrow(english_tweets) > 0) {
+    english_tweets$tweet <- english_tweets$`X2..Tweet`
+    english_tweets <- english_tweets[, c("tweet")]
+    cat("\nColumn names after adding 'tweet':\n")
+    print(colnames(english_tweets))
+    english_tweets$tweetnumber <- 1:nrow(english_tweets)
+    
+    cat("\nStructure of the cleaned dataframe:\n")
+    print(str(english_tweets))
+
+    return(english_tweets)
+  } else {
+    cat("\nNo English tweets remaining.\n")
+    return(data.frame())
+  }
+})
+
+
+```
+
+The function gives us 6 data sets with only 2 variables: tweet and tweetnumber  and we want to keep  tweetnumber to track down every word from the tweet text later.
+
+
+## Stop Words
+
+```{r}
+data(stop_words)
+custom_stop_words <- bind_rows(
+  tibble(word = c("t.co","csun","blm","rt","https",
+                  "BLM","blacklivesmatter","black",
+                  "georgefloyd","2",'#blm','#blacklivesmatter',
+                  '#georgefloyd','august'), 
+         lexicon = c("custom")), stop_words)
+```
+
+We want to have some stop words for our analysis so that those wouldn't appear in our frequency table and interfere our judgment. 
+
+
+## Extract Tokens
+
+```{r,message=FALSE,warning=FALSE}
+remove_reg <- "&amp;|&lt;|&gt;"
+dfList2 <- list(tweets1, tweets2, tweets3, tweets4, tweets5, tweets6)
+result_list2 <- lapply(dfList2, function(x) {
+  print(colnames(x))
+  
+  x %>%
+    mutate(tweet = str_remove_all(`X2..Tweet`, remove_reg)) %>%
+    unnest_tokens(output = "word", input = "tweet") %>%
+    filter(!word %in% custom_stop_words$word,
+           !word %in% str_remove_all(custom_stop_words$word, "'"),
+           str_detect(word, "[a-z]"))
+})
+
+tidy1 <- as.data.frame(result_list2[[1]])
+tidy2 <- as.data.frame(result_list2[[2]])
+tidy3 <- as.data.frame(result_list2[[3]])
+tidy4 <- as.data.frame(result_list2[[4]])
+tidy5 <- as.data.frame(result_list2[[5]])
+tidy6 <- as.data.frame(result_list2[[6]])
+
+
+
+```
+
+Each single word in each tweet is considered as a token. By doing so, we can start to count frequency of each word or even each pair of words.
+
+
+# Data Analysis and Visualization
+## Visualize the Most Common Words
+
+```{r}
+# Count the Frequency for Each Word
+tidy_week11 <- tidy1 %>% dplyr::count(word, sort = TRUE) 
+tidy_week12 <- tidy2 %>% dplyr::count(word, sort = TRUE) 
+tidy_week21 <- tidy3 %>% dplyr::count(word, sort = TRUE) 
+tidy_week22 <- tidy4 %>% dplyr::count(word, sort = TRUE) 
+tidy_week31 <- tidy5 %>% dplyr::count(word, sort = TRUE) 
+tidy_week32 <- tidy6 %>% dplyr::count(word, sort = TRUE) 
+
+# Remove all non-english tokens
+tidy1_english <- tidy_week11[which(!grepl("[^\x01-\x7F]+", tidy_week11$word)),]
+tidy2_english <- tidy_week12[which(!grepl("[^\x01-\x7F]+", tidy_week12$word)),]
+tidy3_english <- tidy_week21[which(!grepl("[^\x01-\x7F]+", tidy_week21$word)),]
+tidy4_english <- tidy_week22[which(!grepl("[^\x01-\x7F]+", tidy_week22$word)),]
+tidy5_english <- tidy_week31[which(!grepl("[^\x01-\x7F]+", tidy_week31$word)),]
+tidy6_english <- tidy_week32[which(!grepl("[^\x01-\x7F]+", tidy_week32$word)),]
+
+```
+
+
+
+```{r,message=FALSE,warning=FALSE}
+
+dfList3<-list(tidy1_english,tidy2_english,tidy3_english,tidy4_english,tidy5_english,tidy6_english)
+
+
+result_list3 <- 
+  llply(dfList3, function(x) {
+    plot <- x %>%
+    dplyr::top_n(20) %>%
+    dplyr::mutate(word = reorder(word, n)) %>%
+    ggplot(aes(word, n, fill=word)) +
+    geom_bar(stat="identity")+
+    scale_fill_hue(c=45, l=80)+
+    xlab(NULL) +
+    coord_flip()+
+    theme(legend.position="none")
+    return(plot)})
+
+result_list3[[1]]
+result_list3[[2]]
+result_list3[[3]]
+result_list3[[4]]
+result_list3[[5]]
+result_list3[[6]]
+```
+
+The most common words didn't change a lot over the 3 months. In order to dig more information, we can try to identify positive words and negative words from them.
+
+
+```{r,message=FALSE,warning=FALSE}
+
+dfList4<-list(tidy1,tidy2,tidy3,tidy4,tidy5,tidy6)
+#visualize using Word clouds
+result_list_wordclouds <- 
+  llply(dfList4, function(x) {
+    plot <- x %>%
+    inner_join(get_sentiments("bing")) %>%
+    count(word, sentiment, sort = TRUE) %>%
+    acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+    comparison.cloud(colors = c("gray20", "gray80"),max.words = 50)
+    return(plot)})
+
+```
+
+Word clouds can show both of the most common negative words and the most common positive words. 
+
+
+
+```{r,message=FALSE,warning=FALSE}
+#Finding the most common positive words 
+nrc_positive <- get_sentiments("nrc") %>% 
+  filter(sentiment == "positive")
+
+result_list4 <- 
+  llply(dfList4, function(x) {
+    plot <- x %>%
+    inner_join(nrc_positive) %>%
+    dplyr::count(word, sort = TRUE) %>%
+    dplyr::top_n(20) %>%
+    dplyr::mutate(word = reorder(word, n)) %>%
+    ggplot(aes(word, n, fill=word)) +
+    geom_bar(stat="identity")+
+    scale_fill_hue(c=45, l=80)+
+    xlab(NULL) +
+    coord_flip()+
+    theme(legend.position="none")
+    return(plot)})
+
+result_list4[[1]]
+result_list4[[2]]
+result_list4[[3]]
+result_list4[[4]]
+result_list4[[5]]
+result_list4[[6]]
+```
+
+Overall trend: At first, people called on love, unity, and justice. Then they began to call on donations. Later, they tried to appeal on voting to pursue justice again.  They wanted the government/legal authority to act upon this. 
+
+
+```{r,message=FALSE,warning=FALSE}
+#Find the most common negative words using lexicon
+nrc_negative <- get_sentiments("nrc") %>% 
+  filter(sentiment == "negative")
+
+result_list5 <- 
+  llply(dfList4, function(x) {
+    plot <- x %>%
+    inner_join(nrc_negative) %>%
+    dplyr::count(word, sort = TRUE) %>%
+    dplyr::top_n(20) %>%
+    dplyr::mutate(word = reorder(word, n)) %>%
+    ggplot(aes(word, n, fill=word)) +
+    geom_bar(stat="identity")+
+    scale_fill_hue(c=45, l=80)+
+    xlab(NULL) +
+    coord_flip()+
+    theme(legend.position="none")
+    return(plot)})
+
+result_list5[[1]]
+result_list5[[2]]
+result_list5[[3]]
+result_list5[[4]]
+result_list5[[5]]
+result_list5[[6]]
+```
+
+Overall trend: At first, people tweeted mostly about how they felt about Geroge Floyd's death and the police. Then, people tweeted more about how they felt regarding loathing and violence. Later, people talked more about changing the situation through voting.
+
+
+```{r,message=FALSE,warning=FALSE}
+#how much each word contributed to each sentiment.
+result_list_contribute <- 
+  llply(dfList4, function(x) {
+    plot <- x %>%
+    inner_join(get_sentiments("bing")) %>%
+    dplyr::count(word, sentiment, sort = TRUE)  %>%
+    group_by(sentiment) %>%
+    top_n(30) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(word, n, fill = sentiment)) +
+    geom_col(show.legend = FALSE) +
+    facet_wrap(~sentiment, scales = "free") +
+    labs(y = "Contribution to sentiment",
+         x = NULL) +
+    coord_flip()
+    return(plot)})
+
+result_list_contribute[[1]]
+result_list_contribute[[2]]
+result_list_contribute[[3]]
+result_list_contribute[[4]]
+result_list_contribute[[5]]
+result_list_contribute[[6]]
+```
+
+
+## Visualize Using loughran Lexicon
+
+```{r,message=FALSE,warning=FALSE}
+#Examine how sentiments changes 
+result_list7 <- 
+  llply(dfList4, function(x) {
+    plot <- x %>%
+    count(word) %>%
+    inner_join(get_sentiments("loughran"), by = "word") %>%
+    group_by(sentiment) %>%
+    top_n(10, n) %>%
+    ungroup() %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(word, n, fill=word)) +
+    geom_bar(stat="identity")+
+    scale_fill_hue(c=45, l=80)+
+    coord_flip() +
+    facet_wrap(~ sentiment, scales = "free") +
+    theme(legend.position="none")
+    return(plot)})
+
+result_list7[[1]]
+result_list7[[2]]
+result_list7[[3]]
+result_list7[[4]]
+result_list7[[5]]
+result_list7[[6]]
+```
+
+Running sentiment analysis using “loughran” lexicon, we can get the frequency of words in 6 categories. 
+From the output, we can see (1) People's litigous demand is increasing in magnitude over time. Legal complaint such as petitions starts to attract more and more attention. They called on petition for achieving justice. (2) The negative sentiments shrinked from June to July. But as soon as what happened to Jacob Blake in Wisconsin appeared on news, the negativity went back. And what they were mad the most was the 'violence' involved. (3) The sentiments in June is very similar with August. The first one was the reaction to George Floyd, the second was the reaction to Jacob Blake. (4) In June, the uncertainty was strong. People felt unsure and doubt so much. But over the 3 months, the uncertainty decreased. People got calmer, and their movement on seeking legal change probably helped.
+
+
+## Visualize Frequency Change of Key Words
+
+```{r}
+# How many times do people mention about 'georgefloyd'
+result_list14 <- 
+  llply(dfList2, function(x) {
+    print(colnames(x))
+    georgefloyd <- x %>% 
+      filter(str_detect(X2..Tweet, "georgefloyd")) %>% 
+      dplyr::select(X2..Tweet)
+    
+    le <- length(georgefloyd$X2..Tweet)
+    return(le)
+  })
+
+georgefloyd1 <- result_list14[[1]]
+georgefloyd2 <- result_list14[[2]]
+georgefloyd3 <- result_list14[[3]]
+georgefloyd4 <- result_list14[[4]]
+georgefloyd5 <- result_list14[[5]]
+georgefloyd6 <- result_list14[[6]]
+
+georgefloyd_mat <- data.frame(x = c(1:6), y = c(georgefloyd1, georgefloyd2, georgefloyd3, georgefloyd4, georgefloyd5, georgefloyd6))
+
+ggplot(georgefloyd_mat, aes(x, y)) +
+  geom_line(color = "blue", linetype = "dashed") +
+  geom_point() +
+  ggtitle("Frequency change of the 'georgefloyd' topic")
+
+```
+
+Overall, the number of times that people tweet about 'georgefloyd' decreased over the three months. The topic's heat is cooling down.
+
+
+
+
+
