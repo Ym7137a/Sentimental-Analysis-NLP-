@@ -1,4 +1,4 @@
-# Twitter Sentimental Analysis in R -NLP 
+# Twitter Sentimental Analysis in R - NLP & Text Mining
 **About :** 
 
 This project aims to analyze sentiment trends on Twitter related to the Black Lives Matter Movement. Twitter sentiments following the tragic death of George Floyd, exploring the global Black Lives Matter (BLM) movement. Utilizing sentiment analysis, we scrutinize an extensive dataset of tweets to reveal intricate discussions on police brutality, racial justice, and BLM protests. Leveraging Twitter data, our study captures contemporaneous reactions, emotions, and viewpoints, offering a thorough comprehension of the socio-political panorama. 
