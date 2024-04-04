@@ -18,6 +18,10 @@ In this project, I conducted sentiment analysis using Twitter data related to th
 2. How much each word contributed to each sentiment.
 <img src="Visualizations/3.png" alt="Description of the image" width="500">
 
+3. Examine how sentiments changes
+   <img src="Visualizations/4.png" alt="Description of the image" width="500">
+
+
 
    
 
