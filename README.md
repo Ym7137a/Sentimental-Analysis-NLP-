@@ -13,7 +13,7 @@ In this project, I conducted sentiment analysis using Twitter data related to th
 
 **Data Analysis & Visualization:**
 1. Visualize the Most Common Words
-2. <img src=""C:\Users\nishi\OneDrive\Desktop\Github projects\Sentimental Analysis\Sentimental-Analysis-NLP-\Visualizations\1.png"" alt="Description of the image">
+2. <img src="visualizations/1.png" alt="Description of the image">
 
    
 
