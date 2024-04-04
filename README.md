@@ -12,11 +12,11 @@ Keywords: Twitter, Sentiment Analysis, Black Lives Matter, George Floyd, Social 
 In this project, I conducted sentiment analysis using Twitter data related to the George Floyd incident. Leveraging R programming language and various packages such as tidytext, ggplot2, dplyr, and tm, I performed data preparation, cleaning, and tokenization to extract meaningful insights from the tweets. Additionally, I employed lexicons such as 'bing' and 'loughran' to analyze sentiment trends over time, visualizing the results using word clouds and bar charts. By demonstrating proficiency in data wrangling, sentiment analysis, and data visualization techniques, this project showcases my skills in R programming, text analysis, and data-driven storytelling.
 
 **Data Analysis & Visualization:**
-1. Visualize the Most Common Words
+1. Visualizing the Most Common Words used across the tweets.
 <img src="Visualizations/1.png" alt="Description of the image" width="500">
 
-2. Word cloud of tweets showcasing negative and positive words used
-<img src="Visualizations/2.png" alt="Description of the image" width="500">
+2. How much each word contributed to each sentiment.
+<img src="Visualizations/3.png" alt="Description of the image" width="500">
 
 
    
