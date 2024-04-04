@@ -13,7 +13,10 @@ In this project, I conducted sentiment analysis using Twitter data related to th
 
 **Data Analysis & Visualization:**
 1. Visualize the Most Common Words
-2. <img src="Visualizations/1.png" alt="Description of the image" width="500">
+<img src="Visualizations/1.png" alt="Description of the image" width="500">
+
+2. Word cloud of tweets showcasing negative and positive words used
+<img src="Visualizations/2.png" alt="Description of the image" width="500">
 
 
    
