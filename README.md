@@ -25,10 +25,12 @@ In this project, I conducted sentiment analysis using Twitter data related to th
 <img src="Visualizations/5.png" alt="Description of the image" width="500">
 
 **Conclusions:**
+
 The analysis conducted on the Black Lives Matter discourse on Twitter yielded valuable insights into the dynamic nature of public sentiment and conversation surrounding this crucial social issue. The examination 
 of word frequencies, sentiment changes, and key terms' contributions to sentiments across six datasets over three months provided a comprehensive understanding of the evolving discourse. The identification of persistent terms, such as 'police,' 'jacobblake,' 'lives,' and 'people,' revealed a degree of stability in the most common words used over time. This stability may indicate consistent themes within the discourse or essential topics that retain prominence. However, the subtle changes in the top 20 words across the datasets suggest nuanced shifts in emphasis or emerging discussions.
 
 **Future Research:**
+
 Future research endeavors in the realm of online discourse surrounding social movements, such as the Black Lives Matter movement on Twitter, can build upon the insights gained from this study. One avenue for exploration involves a more nuanced analysis of user characteristics and demographics to better understand how different groups engage with and contribute to the discourse. Investigating the impact of influential events and news cycles on sentiment dynamics over time could provide a deeper understanding of the evolving nature of online conversations. Additionally, exploring the role of multimedia content, such as images and videos, in shaping sentiments could contribute to a more comprehensive analysis. 
 
 
