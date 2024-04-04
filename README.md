@@ -19,7 +19,7 @@ In this project, I conducted sentiment analysis using Twitter data related to th
 <img src="Visualizations/3.png" alt="Description of the image" width="500">
 
 3. Examine how sentiments changes
-   <img src="Visualizations/4.png" alt="Description of the image" width="500">
+<img src="Visualizations/4.png" alt="Description of the image" width="500">
 
 
 
